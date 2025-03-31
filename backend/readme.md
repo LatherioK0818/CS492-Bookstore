@@ -16,7 +16,7 @@ Welcome to the backend for the Bookstore Management System, built with **Django*
 
 ### 1. Clone the Repository
 ```bash
-https://github.com/your-org/bookstore-backend.git
+git clone https://github.com/your-org/bookstore-backend.git
 cd bookstore-backend
 ```
 
