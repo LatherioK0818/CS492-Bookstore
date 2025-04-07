@@ -1,15 +1,17 @@
-import React, { useState } from "react";
-import "../styles/Cart.css";
+import React, { useContext } from "react";
+import { CartContext } from "../contexts/CartContext";
+import "../styles/Cart.css"; 
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState([]); // Empty state for now, can be populated from context or props later
+  const { cartItems, removeFromCart, clearCart } = useContext(CartContext);
 
   const handleCheckout = () => {
-    alert("Checkout functionality not implemented yet.");
-  };
-
-  const handleRemove = (id) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+    if (cartItems.length === 0) {
+      alert("Your cart is empty. Add items before proceeding to checkout.");
+    } else {
+      alert("Proceeding to checkout functionality not implemented yet.");
+      // Implement checkout functionality here, for example, making an API call to create an order.
+    }
   };
 
   return (
@@ -36,16 +38,23 @@ const Cart = () => {
                 <td>${item.price}</td>
                 <td>${(item.quantity * item.price).toFixed(2)}</td>
                 <td>
-                  <button onClick={() => handleRemove(item.id)} className="remove-btn">Remove</button>
+                  <button onClick={() => removeFromCart(item.id)} style={{ color: "red" }}>
+                    Remove
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
-      <button onClick={handleCheckout} disabled={cartItems.length === 0}>
-        Proceed to Checkout
-      </button>
+      <div className="cart-summary">
+        <button onClick={handleCheckout} disabled={cartItems.length === 0}>
+          Proceed to Checkout
+        </button>
+        <button onClick={clearCart} disabled={cartItems.length === 0} style={{ marginLeft: "10px" }}>
+          Clear Cart
+        </button>
+      </div>
     </div>
   );
 };

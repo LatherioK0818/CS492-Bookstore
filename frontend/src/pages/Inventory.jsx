@@ -1,85 +1,120 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import "../styles/Inventory.css"; 
+import { CartContext } from "../contexts/CartContext";
+import { AuthContext } from "../contexts/AuthContext";
+import { fetchBooks, fetchVerifyToken, fetchDeleteBook } from "../services/apiService";
+import "../styles/Inventory.css";
 
 const Inventory = () => {
   const [books, setBooks] = useState([]);
-const navigate = useNavigate();
+  const [isStaff, setIsStaff] = useState(false);
+  const navigate = useNavigate();
+  const { addToCart } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
 
+  // Fetch books from the API
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/books/")  
-      .then((res) => res.json())
-      .then((data) => setBooks(data))
-      .catch((err) => console.error("Error fetching inventory:", err));
+    async function getBooks() {
+      try {
+        const data = await fetchBooks();
+        setBooks(data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        alert("Failed to load books. Please try again later.");
+      }
+    }
+    getBooks();
   }, []);
-  
-  const handleDelete = (id) => {
+
+  // Verify if the user is a staff member
+  useEffect(() => {
+    async function verifyStaff() {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        try {
+          await fetchVerifyToken(token);
+          if (user && user.is_staff) {
+            setIsStaff(user.is_staff);
+          }
+        } catch (error) {
+          console.error("Token verification failed:", error);
+          setIsStaff(false);
+        }
+      } else {
+        setIsStaff(false);
+      }
+    }
+    verifyStaff();
+  }, [user]);
+
+  // Handle book deletion
+  const handleDelete = async (id) => {
     const confirmed = window.confirm("Are you sure you want to delete this book?");
     if (!confirmed) return;
-  
-    fetch(`http://127.0.0.1:8000/api/books/${id}/`, {
-      method: "DELETE",
-    })
-      .then((res) => {
-        if (res.ok) {
-          setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
-        } else {
-          console.error("Failed to delete book.");
-        }
-      })
-      .catch((err) => console.error("Error deleting book:", err));
+
+    try {
+      await fetchDeleteBook(id);
+      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
+    } catch (error) {
+      console.error("Error deleting book:", error);
+      alert("Failed to delete the book. Please try again later.");
+    }
   };
 
+  // Handle book editing
   const handleEdit = (id) => {
     navigate(`/edit-book/${id}`);
   };
-  
 
   return (
     <div className="inventory-container">
       <h2>Inventory Dashboard</h2>
-      <div style={{ marginBottom: "20px" }}>
-  <Link to="/add-book">
-    <button>Add New Book</button>
-  </Link>
-</div>
       <table className="inventory-table">
-      <thead>
-  <tr>
-    <th>Title</th>
-    <th>Author</th>
-    <th>ISBN</th>
-    <th>Subject</th>
-    <th>Quantity</th>
-    <th>Price</th>
-    <th>Actions</th> {/* Add this here */}
-  </tr>
-</thead>
-
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th>
+            <th>Subject</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
-  {books.map((book) => (
-    <tr key={book.id}>
-      <td>{book.title}</td>
-      <td>{book.author}</td>
-      <td>{book.isbn}</td>
-      <td>{book.subject}</td>
-      <td>{book.quantity}</td>
-      <td>${book.price}</td>
-      <td>
-  <button onClick={() => handleEdit(book.id)}>Edit</button>
-  <button
-    onClick={() => handleDelete(book.id)}
-    style={{ marginLeft: "10px", color: "red" }}
-  >
-    Delete
-  </button>
-</td>
-
-    </tr>
-  ))}
-</tbody>
-
+          {books.length === 0 ? (
+            <tr>
+              <td colSpan="7">No books available in inventory.</td>
+            </tr>
+          ) : (
+            books.map((book) => (
+              <tr key={book.id}>
+                <td>{book.title}</td>
+                <td>{book.author}</td>
+                <td>{book.isbn}</td>
+                <td>{book.subject}</td>
+                <td>{book.quantity}</td>
+                <td>${book.price}</td>
+                <td>
+                  {isStaff && (
+                    <>
+                      <button onClick={() => handleEdit(book.id)}>Edit</button>
+                      <button
+                        onClick={() => handleDelete(book.id)}
+                        style={{ marginLeft: "10px", color: "red" }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  <button onClick={() => addToCart(book)} style={{ marginLeft: "10px" }}>
+                    Add to Cart
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
       </table>
     </div>
   );
