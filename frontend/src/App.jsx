@@ -1,21 +1,28 @@
-﻿import { useEffect, useState } from 'react';
+﻿import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Inventory from "./pages/Inventory";
+import BookEntry from "./pages/BookEntry";
+import EditBook from "./pages/EditBook";
+import Cart from "./pages/Cart";
+import Header from "./components/Header";
 
-function App() {
-    const [message, setMessage] = useState('Loading...');
-
-    useEffect(() => {
-        fetch('http://localhost:5000/')
-            .then((res) => res.text())
-            .then((data) => setMessage(data))
-            .catch((err) => setMessage('Error connecting to backend'));
-    }, []);
-
-    return (
-        <div style={{ padding: '2rem' }}>
-            <h1>📚 Bookstore App</h1>
-            <p>Backend says: <strong>{message}</strong></p>
-        </div>
-    );
-}
+const App = () => {
+  return (
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/book-entry" element={<BookEntry />} />
+        <Route path="/edit/:id" element={<EditBook />} />
+        <Route path="/add-book" element={<BookEntry />} />
+        <Route path="/cart" element={<Cart />} />
+      </Routes>
+    </Router>
+  );
+};
 
 export default App;

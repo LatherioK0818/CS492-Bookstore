@@ -1,0 +1,22 @@
+.inventory-container {
+    padding: 2rem;
+    background-color: #f8f9fa;
+  }
+  
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .inventory-table th,
+  .inventory-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .inventory-table th {
+    background-color: #343a40;
+    color: white;
+  }
+  
