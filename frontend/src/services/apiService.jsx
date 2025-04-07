@@ -1,10 +1,10 @@
+// src/services/apiService.jsx
+
 export const fetchBooks = async () => {
-    const token = localStorage.getItem("access_token");  // Get token from localStorage
     const response = await fetch('http://127.0.0.1:8000/api/books/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,  // Pass the access token in the header
       },
     });
   
@@ -32,12 +32,10 @@ export const fetchBooks = async () => {
   };
   
   export const fetchDeleteBook = async (id) => {
-    const token = localStorage.getItem("access_token");  // Get token from localStorage
     const response = await fetch(`http://127.0.0.1:8000/api/books/${id}/`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,  // Pass the access token in the header
       },
     });
   

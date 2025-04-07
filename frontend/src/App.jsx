@@ -1,39 +1,67 @@
-﻿// src/App.jsx
-import React from "react";
-import { AuthProvider } from './contexts/AuthProvider';
-import { CartProvider } from './contexts/CartProvider'; 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+﻿import React, { useContext } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Inventory from "./pages/Inventory";
 import BookEntry from "./pages/BookEntry";
 import EditBook from "./pages/EditBook";
-import Cart from "./pages/Cart";
+import Cart from "./pages/Cart"; // Updated Cart component
 import Checkout from "./pages/Checkout";
+import Reports from "./pages/Reports"; // New Reports page
+import Homepage from "./pages/Homepage";
 import Header from "./components/Header";
-import ProtectedRoute from './components/ProtectedRoute';
+import AuthProvider, { AuthContext } from "./contexts/AuthProvider";
+import CartProvider from "./contexts/CartProvider";
+
+// PrivateRoute component to protect specific routes
+const PrivateRoute = ({ children }) => {
+  const { accessToken } = useContext(AuthContext);
+  return accessToken ? children : <Navigate to="/login" />;
+};
 
 const App = () => {
   return (
-    <Router>
     <AuthProvider>
       <CartProvider>
+        <Router>
           <Header />
           <Routes>
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<Homepage />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
-            <Route path="/book-entry" element={<ProtectedRoute><BookEntry /></ProtectedRoute>} />
-            <Route path="/edit/:id" element={<ProtectedRoute><EditBook /></ProtectedRoute>} />
-            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route
+              path="/book-entry"
+              element={
+                <PrivateRoute>
+                  <BookEntry />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/edit-book/:id"
+              element={
+                <PrivateRoute>
+                  <EditBook />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/cart" element={<Cart />} />
+            
+            <Route path="/checkout" element={<Checkout />} />
+            <Route
+              path="/reports"
+              element={
+                <PrivateRoute roles={['admin']}>
+                  <Reports />
+                </PrivateRoute>
+              }
+            />
           </Routes>
-       
+        </Router>
       </CartProvider>
-    </AuthProvider> 
-    </Router>
+    </AuthProvider>
   );
 };
-
 
 export default App;
