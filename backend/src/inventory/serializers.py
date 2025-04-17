@@ -1,11 +1,14 @@
 from rest_framework import serializers
-from .models import Book, Order, OrderItem, OrderStatusLog 
+from .models import Book, Order, OrderItem, OrderStatusLog
 
+# ✅ Book Serializer
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
 
+
+# ✅ Order Status Log Serializer
 class OrderStatusLogSerializer(serializers.ModelSerializer):
     updated_by = serializers.StringRelatedField()
 
@@ -13,11 +16,15 @@ class OrderStatusLogSerializer(serializers.ModelSerializer):
         model = OrderStatusLog
         fields = ['status', 'timestamp', 'updated_by']
 
+
+# ✅ Order Item Serializer
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'book', 'quantity']
 
+
+# ✅ Order Serializer
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     status_logs = OrderStatusLogSerializer(many=True, read_only=True)
@@ -45,28 +52,26 @@ class OrderSerializer(serializers.ModelSerializer):
 
         return order
 
-def update(self, instance, validated_data):
-    user = self.context['request'].user
-    new_status = validated_data.get('status', instance.status)
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        new_status = validated_data.get('status', instance.status)
 
-    # Only allow staff to update status
-    if new_status != instance.status:
-        if not user.is_staff:
-            raise serializers.ValidationError("Only staff can update order status.")
+        # Only allow staff to update status
+        if new_status != instance.status:
+            if not user.is_staff:
+                raise serializers.ValidationError("Only staff can update order status.")
 
-        # Save new status
-        instance.status = new_status
-        instance.save()
+            # Save new status
+            instance.status = new_status
+            instance.save()
 
-        # ✅ Log the status change
-        OrderStatusLog.objects.create(
-            order=instance,
-            status=new_status,
-            updated_by=user
-        )
-    else:
-        instance.save()
+            # ✅ Log the status change
+            OrderStatusLog.objects.create(
+                order=instance,
+                status=new_status,
+                updated_by=user
+            )
+        else:
+            instance.save()
 
-    return instance
-
-
+        return instance

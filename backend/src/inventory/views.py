@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, filters, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 from .models import Book, Order
 from .serializers import BookSerializer, OrderSerializer
 
@@ -11,6 +12,7 @@ class IsStaffOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user and request.user.is_authenticated and request.user.is_staff
+
 
 # ✅ ViewSet for managing books
 class BookViewSet(viewsets.ModelViewSet):
@@ -37,6 +39,7 @@ class BookViewSet(viewsets.ModelViewSet):
         book.save()
         return Response({'message': f"Restocked {quantity} units of '{book.title}'."})
 
+
 # ✅ ViewSet for managing orders
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -51,11 +54,30 @@ class OrderViewSet(viewsets.ModelViewSet):
         queryset = Order.objects.all() if user.is_staff else Order.objects.filter(customer=user)
 
         # Add optional status filtering
-        status = self.request.query_params.get('status')
-        if status:
-            queryset = queryset.filter(status=status)
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
 
         return queryset
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
+
+
+# ✅ Registration endpoint
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def register_user(request):
+    User = get_user_model()
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    if not username or not email or not password:
+        return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=email).exists():
+        return Response({"error": "Email already in use."}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = User.objects.create_user(username=username, email=email, password=password)
+    return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)
