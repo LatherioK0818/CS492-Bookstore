@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Order, OrderItem, OrderStatusLog
+from .models import Book, Order, OrderItem, OrderStatusLog, CustomUser
 
 # ✅ Book Serializer
 class BookSerializer(serializers.ModelSerializer):
@@ -28,10 +28,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     status_logs = OrderStatusLogSerializer(many=True, read_only=True)
+    customer = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'created_at', 'status', 'items', 'status_logs']
+        fields = ['id', 'customer', 'created_at', 'status', 'items', 'status_logs',]
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
@@ -75,3 +76,22 @@ class OrderSerializer(serializers.ModelSerializer):
             instance.save()
 
         return instance
+    
+class RegistrationSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150, required=True)
+    email = serializers.EmailField(max_length=254, required=True)
+    password = serializers.CharField(min_length=8, write_only=True, required=True)
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'is_staff', 'is_superuser']
+        read_only_fields = ['id', 'is_staff', 'is_superuser']

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
@@ -26,8 +27,15 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
+
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now) 
+
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.customer.username} - {self.status}"
 
     def __str__(self):
         return f"Order #{self.id} by {self.customer.username} - {self.status}"
@@ -44,7 +52,8 @@ class OrderStatusLog(models.Model):
     order = models.ForeignKey(Order, related_name='status_logs', on_delete=models.CASCADE)
     status = models.CharField(max_length=20)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-
+    timestamp = models.DateTimeField(default=timezone.now)
+    
     def __str__(self):
         return f"Order #{self.order.id} changed to {self.status} by {self.updated_by.username if self.updated_by else 'Unknown'}"
 

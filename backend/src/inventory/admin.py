@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Book
+from .models import Book, Order, OrderItem, OrderStatusLog
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
@@ -45,3 +45,6 @@ class BookAdmin(admin.ModelAdmin):
 
     def has_view_permission(self, request, obj=None):
         return request.user.is_superuser
+admin.site.register(Order)
+admin.site.register(OrderItem)
+admin.site.register(OrderStatusLog)

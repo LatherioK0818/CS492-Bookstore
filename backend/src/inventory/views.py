@@ -2,8 +2,10 @@ from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from .models import Book, Order
-from .serializers import BookSerializer, OrderSerializer
+from django.db import IntegrityError
+from rest_framework.permissions import IsAuthenticated
+from .models import Book, Order, CustomUser
+from .serializers import BookSerializer, OrderSerializer, RegistrationSerializer,  CustomUserSerializer
 
 
 # ✅ Custom permission: only staff can write, everyone can read
@@ -63,21 +65,34 @@ class OrderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    serializer = CustomUserSerializer(request.user)
+    return Response(serializer.data)
+
 
 # ✅ Registration endpoint
 @api_view(['POST'])
-@permission_classes([permissions.AllowAny])
 def register_user(request):
-    User = get_user_model()
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
-
-    if not username or not email or not password:
-        return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
-
-    if User.objects.filter(email=email).exists():
-        return Response({"error": "Email already in use."}, status=status.HTTP_400_BAD_REQUEST)
-
-    user = User.objects.create_user(username=username, email=email, password=password)
-    return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)
+    serializer = RegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            user = CustomUser.objects.create_user(  # Use CustomUser here
+                username=serializer.validated_data['username'],
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password']
+            )
+            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            if "UNIQUE constraint failed: inventory_customuser.username" in str(e):
+                return Response({'error': 'This username is already taken.'}, status=status.HTTP_400_BAD_REQUEST)
+            elif "UNIQUE constraint failed: inventory_customuser.email" in str(e):
+                return Response({'error': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Log the full error for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Unhandled IntegrityError during registration: {e}")
+                return Response({'error': 'Registration failed due to a database error.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
