@@ -1,113 +1,115 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "../contexts/CartContext";
-import { AuthContext } from "../contexts/AuthProvider";
+import { AuthContext } from "../contexts/AuthContext";
+import { fetchBooks, fetchDeleteBook } from "../services/apiServices";
+import PageContainer from "../components/PageContainer";
 import "../styles/Inventory.css";
 
 const Inventory = () => {
   const [books, setBooks] = useState([]);
-  const [isStaff, setIsStaff] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
-  const { user } = useContext(AuthContext);
+  const { accessToken } = useContext(AuthContext);
 
-  // Fetch books from the API
+  console.log("Inventory component rendered. accessToken from context:", accessToken);
+
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/books")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch books: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Fetched Books:", data.results); // Log the results array
-        setBooks(data.results); // Set only the results array to books
-      })
-      .catch((err) => {
+    console.log("Inventory useEffect triggered. accessToken:", accessToken);
+    const loadBooks = async () => {
+      try {
+        const data = await fetchBooks();
+        setBooks(data || []);
+        console.log("Books state updated:", data);
+      } catch (err) {
         console.error("Error fetching books:", err.message);
-        setError(err.message);
-      });
-  }, []);
+        setError(err.message || "Failed to load books.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Verify if the user is a staff member
-  useEffect(() => {
-    if (user && user.is_staff) {
-      setIsStaff(user.is_staff);
+    if (accessToken) {
+      loadBooks();
+    } else {
+      console.log("AccessToken is null or undefined. Not fetching books.");
     }
-  }, [user]);
+  }, [accessToken]);
 
-  // Handle book deletion
   const handleDelete = async (id) => {
     const confirmed = window.confirm("Are you sure you want to delete this book?");
     if (!confirmed) return;
 
     try {
-      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
-    } catch (error) {
-      console.error("Error deleting book:", error);
+      await fetchDeleteBook(id);
+      setBooks((prev) => prev.filter((book) => book.id !== id));
+      alert("Book deleted successfully.");
+    } catch (err) {
+      console.error("Error deleting book:", err.message);
+      alert("Failed to delete the book.");
     }
   };
 
-  // Handle book editing
-  const handleEdit = (id) => {
-    navigate(`/edit-book/${id}`);
-  };
+  const handleEdit = (id) => navigate(`/edit-book/${id}`);
 
   return (
-    <div className="inventory-container">
-      <h2>Inventory Dashboard</h2>
-      {error ? (
-        <div>Error: {error}</div>
-      ) : books.length > 0 ? (
-        <div className="inventory-table-container">
-          <table className="inventory-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>ISBN</th>
-                <th>Subject</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {books.map((book) => (
-                <tr key={book.id}>
-                  <td>{book.title}</td>
-                  <td>{book.author}</td>
-                  <td>{book.isbn}</td>
-                  <td>{book.subject}</td>
-                  <td>{book.quantity}</td>
-                  <td>${book.price}</td>
-                  <td>
-                    {isStaff && (
-                      <>
-                        <button onClick={() => handleEdit(book.id)}>Edit</button>
-                        <button
-                          onClick={() => handleDelete(book.id)}
-                          style={{ marginLeft: "10px", color: "red" }}
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                    <button onClick={() => addToCart(book)} style={{ marginLeft: "10px" }}>
-                      Add to Cart
-                    </button>
-                  </td>
+    <PageContainer>
+      <div className="inventory-container">
+        <h2>Inventory Dashboard</h2>
+
+        {loading && <p>Loading books...</p>}
+        {error && <p className="error">{error}</p>}
+        {!loading && books.length === 0 && <p>No books available.</p>}
+
+        {books.length > 0 && (
+          <div className="inventory-table-container">
+            <table className="inventory-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Author</th>
+                  <th>ISBN</th>
+                  <th>Subject</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p>No books available.</p>
-      )}
-    </div>
+              </thead>
+              <tbody>
+                {books.map((book) => (
+                  <tr key={book.id}>
+                    <td>{book.title}</td>
+                    <td>{book.author}</td>
+                    <td>{book.isbn}</td>
+                    <td>{book.subject}</td>
+                    <td>{book.quantity}</td>
+                    <td>${book.price}</td>
+                    <td>
+                       
+                        <>
+                          <button onClick={() => handleEdit(book.id)}>Edit</button>
+                          <button
+                            onClick={() => handleDelete(book.id)}
+                            className="delete-button"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      
+                      <button onClick={() => addToCart(book)} className="cart-button">
+                        Add to Cart
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </PageContainer>
   );
 };
 

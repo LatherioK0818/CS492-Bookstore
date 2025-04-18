@@ -1,7 +1,15 @@
 import React from "react";
+import PageContainer from "../components/PageContainer"; // Import PageContainer
 
 const Reports = () => {
-  return <h1>Reports Page (Under Construction)</h1>;
+  return (
+    <PageContainer>
+      <div>
+        <h2>Reports</h2>
+        <p>Generate and view reports here.</p>
+      </div>
+    </PageContainer>
+  );
 };
 
 export default Reports;

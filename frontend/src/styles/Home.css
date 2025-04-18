@@ -25,3 +25,23 @@
   width: 100%;
   box-shadow: 0 -2px 5px rgba(233, 232, 232, 0.1); /* Subtle shadow for depth */
 }
+h1 {
+  font-size: 2.5rem;
+  color: #04e904;
+  text-align: center;
+  margin-bottom: 20px;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+  color: #09f309;
+  text-align: center;
+  margin-bottom: 20px;
+}
+li {
+  margin-bottom: 10px;
+  color: #0ae70a;
+  text-align: center;
+  margin-bottom: 20px;
+
+}

@@ -1,35 +1,49 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthProvider";
+import { AuthContext } from "../contexts/AuthContext";
 import { CartContext } from "../contexts/CartContext";
 import "../styles/Header.css";
 
 const Header = () => {
-  const { accessToken, logout } = useContext(AuthContext);
+  const { accessToken, userRole, logout } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
 
   return (
-    <header style={{ padding: "1rem", background: "#eee" }}>
-      <nav>
-        <Link to="/" style={{ marginRight: "1rem" }}>Home</Link>
-        {!accessToken ? (
-          <>
-            <Link to="/login" style={{ marginRight: "1rem" }}>Login</Link>
-            <Link to="/register" style={{ marginRight: "1rem" }}>Register</Link>
-          </>
-        ) : (
-          <>
-            <Link to="/profile" style={{ marginRight: "1rem" }}>Profile</Link>
-            <button onClick={logout} style={{ marginRight: "1rem" }}>Logout</button>
-          </>
-        )}
-        <Link to="/cart" style={{ marginRight: "1rem" }}>
-          Cart ({cart.length})
-        </Link>
-        <Link to="/inventory">Inventory</Link>
+    <header className="header">
+      <nav className="nav-container">
+        <div className="nav-left">
+          <Link to="/" className="nav-link">Home</Link>
+          {accessToken && (
+            <>
+              <Link to="/inventory" className="nav-link">Inventory</Link>
+              {userRole === "admin" && (
+                <Link to="/reports" className="nav-link">Reports</Link>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="nav-right">
+          <Link to="/cart" className="nav-link">
+            Cart ({cart?.length || 0})
+          </Link>
+
+          {!accessToken ? (
+            <>
+              <Link to="/login" className="nav-link">Login</Link>
+              <Link to="/register" className="nav-link">Register</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/profile" className="nav-link">Profile</Link>
+              <button onClick={logout} className="nav-button">Logout</button>
+            </>
+          )}
+        </div>
       </nav>
     </header>
   );
 };
 
 export default Header;
+

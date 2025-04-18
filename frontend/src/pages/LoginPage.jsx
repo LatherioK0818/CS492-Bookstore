@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const [username, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = (e) => {
     e.preventDefault();
-    console.log('Logging in with:', email, password);
+    console.log('Logging in with:', username, password);
     // Add API logic here later
   };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import PageContainer from "../components/PageContainer"; // Import PageContainer
 import "../styles/EditBook.css";
 
 const EditBook = () => {
@@ -47,24 +48,26 @@ const EditBook = () => {
   };
 
   return (
-    <div className="edit-book-container">
-      <h2>Edit Book</h2>
-      <form onSubmit={handleSubmit} className="edit-book-form">
-        {["title", "author", "isbn", "subject", "price", "quantity"].map((field) => (
-          <div key={field}>
-            <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
-            <input
-              type={field === "price" || field === "quantity" ? "number" : "text"}
-              name={field}
-              value={book[field]}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        ))}
-        <button type="submit">Update Book</button>
-      </form>
-    </div>
+    <PageContainer>
+      <div className="edit-book-container">
+        <h2>Edit Book</h2>
+        <form onSubmit={handleSubmit} className="edit-book-form">
+          {["title", "author", "isbn", "subject", "price", "quantity"].map((field) => (
+            <div key={field}>
+              <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+              <input
+                type={field === "price" || field === "quantity" ? "number" : "text"}
+                name={field}
+                value={book[field]}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          ))}
+          <button type="submit">Update Book</button>
+        </form>
+      </div>
+    </PageContainer>
   );
 };
 

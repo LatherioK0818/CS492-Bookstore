@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PageContainer from "../components/PageContainer"; // Import PageContainer
 import "../styles/BookEntry.css";
 
 const BookEntry = () => {
@@ -56,24 +57,27 @@ const BookEntry = () => {
   };
 
   return (
-    <div className="book-entry-container">
-      <h2>Add New Book</h2>
-      <form onSubmit={handleSubmit} className="book-entry-form">
-        {fieldOrder.map((field) => (
-          <div key={field} className="form-group">
-            <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-            <input
-              type={field === "price" || field === "quantity" ? "number" : "text"}
-              name={field}
-              value={formData[field]}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        ))}
-        <button type="submit">Add Book</button>
-      </form>
-    </div>
+    <PageContainer>
+      <div className="book-entry-container">
+        <h2>Add New Book</h2>
+        <p>Add new books to the inventory here.</p>
+        <form onSubmit={handleSubmit} className="book-entry-form">
+          {fieldOrder.map((field) => (
+            <div key={field} className="form-group">
+              <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+              <input
+                type={field === "price" || field === "quantity" ? "number" : "text"}
+                name={field}
+                value={formData[field]}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          ))}
+          <button type="submit">Add Book</button>
+        </form>
+      </div>
+    </PageContainer>
   );
 };
 
