@@ -17,8 +17,8 @@ const LoginPage = () => {
         <div style={{ marginBottom: 10 }}>
           <label>Email:</label><br />
           <input
-            type="email"
-            value={email}
+            type="Username"
+            value={username}
             onChange={(e) => setEmail(e.target.value)}
             required
             style={{ width: '100%' }}

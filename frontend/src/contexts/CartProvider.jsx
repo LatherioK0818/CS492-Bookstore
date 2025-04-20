@@ -42,10 +42,12 @@ const CartProvider = ({ children }) => {
   };
 
   const handleCheckout = () => {
-    // Here you would typically send the cart data to the backend
-    // For now, just clear the cart
-    console.log("Checked out:", cart);
-    clearCart();
+    const confirmed = window.confirm("Are you sure you want to place this order?");
+    if (confirmed) {
+      console.log("Checked out:", cart);
+      clearCart();
+      alert("Thank you for your order!");
+    }
   };
 
   return (

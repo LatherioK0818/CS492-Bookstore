@@ -6,4 +6,17 @@ import AuthProvider from "./contexts/AuthProvider";
 import CartProvider from "./contexts/CartProvider";
 import Footer from "./components/Footer"; // Import Footer
 
+const App = () => {
+    return (
+      <><AuthProvider>
+        <CartProvider>
+          <Router>
+            <Header />
+            <AppRoutes />
+          </Router>
+        </CartProvider>
+      </AuthProvider><Footer> </Footer></>
+    );
+  };
+  
 export default App;

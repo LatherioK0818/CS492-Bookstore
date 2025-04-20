@@ -7,11 +7,11 @@ import CartProvider from "./contexts/CartProvider";
 import AuthProvider from "./contexts/AuthProvider"; // ✅ Import AuthProvider
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  // <React.StrictMode>
       <AuthProvider>
         <CartProvider>
           <App />
         </CartProvider>
       </AuthProvider>
-  </React.StrictMode>
+  /* </React.StrictMode> */
 );

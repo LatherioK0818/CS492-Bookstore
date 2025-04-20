@@ -13,6 +13,7 @@ import Homepage from "./pages/Homepage";
 import About from "./pages/About";
 import Profile from "./pages/Profile"; // Import your Profile component
 import { AuthContext } from "./contexts/AuthContext";
+import ReceiptPage from "./pages/ReceiptPage";
 
 // Route protection
 const PrivateRoute = ({ children, roles }) => {
@@ -65,6 +66,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute roles={["admin"]}>
             <Reports />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/receipt/:orderId"
+        element={
+          <PrivateRoute>
+            <ReceiptPage />
           </PrivateRoute>
         }
       />

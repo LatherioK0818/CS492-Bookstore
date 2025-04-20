@@ -66,45 +66,54 @@ const Inventory = () => {
         {books.length > 0 && (
           <div className="inventory-table-container">
             <table className="inventory-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Author</th>
-                  <th>ISBN</th>
-                  <th>Subject</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                  <th>Actions</th>
-                </tr>
+            <thead>
+              <tr>
+                <th>Cover</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>ISBN</th>
+                <th>Subject</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Actions</th>
+              </tr>
               </thead>
-              <tbody>
-                {books.map((book) => (
-                  <tr key={book.id}>
-                    <td>{book.title}</td>
-                    <td>{book.author}</td>
-                    <td>{book.isbn}</td>
-                    <td>{book.subject}</td>
-                    <td>{book.quantity}</td>
-                    <td>${book.price}</td>
-                    <td>
-                       
-                        <>
-                          <button onClick={() => handleEdit(book.id)}>Edit</button>
-                          <button
-                            onClick={() => handleDelete(book.id)}
-                            className="delete-button"
-                          >
-                            Delete
-                          </button>
-                        </>
-                      
-                      <button onClick={() => addToCart(book)} className="cart-button">
-                        Add to Cart
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                        <tbody>
+            {books.map((book) => (
+              <tr key={book.id}>
+                <td>
+                  <img
+                    src={book.cover_url || "/default_cover.png"}
+                    alt={`${book.title} cover`}
+                    style={{
+                      width: "70px",
+                      height: "100px",
+                      objectFit: "cover",  // ensures it fills without distorting
+                      borderRadius: "4px"
+                    }}
+                    onError={(e) => (e.target.src = "/default_cover.png")}
+                  />
+                </td>
+                <td>{book.title}</td>
+                <td>{book.author}</td>
+                <td>{book.isbn}</td>
+                <td>{book.subject}</td>
+                <td>{book.quantity}</td>
+                <td>${book.price}</td>
+                <td>
+                  <>
+                    <button onClick={() => handleEdit(book.id)}>Edit</button>
+                    <button onClick={() => handleDelete(book.id)} className="delete-button">
+                      Delete
+                    </button>
+                  </>
+                  <button onClick={() => addToCart(book)} className="cart-button">
+                    Add to Cart
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
             </table>
           </div>
         )}

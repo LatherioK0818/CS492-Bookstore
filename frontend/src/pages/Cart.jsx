@@ -34,9 +34,15 @@ const Cart = () => {
                 <tr key={item.id}>
                   <td>
                     <img
-                      src={`https://dummyimage.com/50x50/000/fff&text=${item.title.charAt(0)}`}
-                      alt={item.title}
-                      style={{ cursor: "pointer" }}
+                      src={item.cover_url || "/default_cover.png"}
+                      alt={`${item.title} cover`}
+                      style={{
+                        width: "70px",
+                        height: "100px",
+                        objectFit: "cover",  // ensures it fills without distorting
+                        borderRadius: "4px"
+                      }}
+                      onError={(e) => (e.target.src = "/default_cover.png")}
                     />
                   </td>
                   <td>{item.title}</td>

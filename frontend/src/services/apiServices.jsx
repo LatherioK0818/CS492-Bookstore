@@ -123,6 +123,18 @@ export const createOrder = async (orderData) => {
   return response.json();
 };
 
+export const getOrderById = async (orderId) => {
+  const response = await secureFetch(`${API_BASE}/orders/${orderId}/`, {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch order");
+  }
+
+  return response.json();
+};
+
 // Auth
 export const registerUser = async (userData) => {
   const response = await fetch(`${API_BASE}/register/`, {
@@ -185,3 +197,5 @@ export const fetchVerifyToken = async (token) => {
 
   return response.json();
 };
+
+export { secureFetch };
