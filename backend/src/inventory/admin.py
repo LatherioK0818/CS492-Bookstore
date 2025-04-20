@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Book
+from .models import Book, Order, OrderItem, OrderStatusLog
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
@@ -28,19 +28,9 @@ class BookAdmin(admin.ModelAdmin):
         return 10 if request.user.is_superuser else 5
 
     def get_fieldsets(self, request, obj=None):
-        if request.user.is_superuser:
-            return (
-                (None, {
-                    'fields': ('title', 'author', 'isbn', 'quantity', 'price')
-                }),
-                ('Advanced options', {
-                    'classes': ('collapse',),
-                    'fields': ('description',),
-                }),
-            )
         return (
             (None, {
-                'fields': ('title', 'author', 'quantity', 'price')
+                'fields': ('title', 'author', 'isbn', 'quantity', 'price')
             }),
         )
 
@@ -55,12 +45,6 @@ class BookAdmin(admin.ModelAdmin):
 
     def has_view_permission(self, request, obj=None):
         return request.user.is_superuser
-
-    def save_model(self, request, obj, form, change):
-        if not change:
-            obj.added_by = request.user
-        obj.save()
-
-    def delete_model(self, request, obj):
-        if request.user.is_superuser:
-            obj.delete()
+admin.site.register(Order)
+admin.site.register(OrderItem)
+admin.site.register(OrderStatusLog)

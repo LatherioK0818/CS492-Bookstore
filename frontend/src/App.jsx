@@ -1,21 +1,9 @@
-﻿import { useEffect, useState } from 'react';
-
-function App() {
-    const [message, setMessage] = useState('Loading...');
-
-    useEffect(() => {
-        fetch('http://localhost:8000/')
-            .then((res) => res.text())
-            .then((data) => setMessage(data))
-            .catch((err) => setMessage('Error connecting to backend'));
-    }, []);
-
-    return (
-        <div style={{ padding: '2rem' }}>
-            <h1>📚 Bookstore App</h1>
-            <p>Backend says: <strong>{message}</strong></p>
-        </div>
-    );
-}
+﻿import React from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import Header from "./components/Header";
+import AppRoutes from "./AppRoutes"; // Centralized route definitions
+import AuthProvider from "./contexts/AuthProvider";
+import CartProvider from "./contexts/CartProvider";
+import Footer from "./components/Footer"; // Import Footer
 
 export default App;

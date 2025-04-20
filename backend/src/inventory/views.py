@@ -1,8 +1,11 @@
 from rest_framework import viewsets, permissions, filters, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from .models import Book, Order
-from .serializers import BookSerializer, OrderSerializer
+from django.contrib.auth import get_user_model
+from django.db import IntegrityError
+from rest_framework.permissions import IsAuthenticated
+from .models import Book, Order, CustomUser
+from .serializers import BookSerializer, OrderSerializer, RegistrationSerializer,  CustomUserSerializer
 
 
 # ✅ Custom permission: only staff can write, everyone can read
@@ -11,6 +14,7 @@ class IsStaffOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user and request.user.is_authenticated and request.user.is_staff
+
 
 # ✅ ViewSet for managing books
 class BookViewSet(viewsets.ModelViewSet):
@@ -37,6 +41,7 @@ class BookViewSet(viewsets.ModelViewSet):
         book.save()
         return Response({'message': f"Restocked {quantity} units of '{book.title}'."})
 
+
 # ✅ ViewSet for managing orders
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -51,11 +56,43 @@ class OrderViewSet(viewsets.ModelViewSet):
         queryset = Order.objects.all() if user.is_staff else Order.objects.filter(customer=user)
 
         # Add optional status filtering
-        status = self.request.query_params.get('status')
-        if status:
-            queryset = queryset.filter(status=status)
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
 
         return queryset
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    serializer = CustomUserSerializer(request.user)
+    return Response(serializer.data)
+
+
+# ✅ Registration endpoint
+@api_view(['POST'])
+def register_user(request):
+    serializer = RegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            user = CustomUser.objects.create_user(  # Use CustomUser here
+                username=serializer.validated_data['username'],
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password']
+            )
+            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            if "UNIQUE constraint failed: inventory_customuser.username" in str(e):
+                return Response({'error': 'This username is already taken.'}, status=status.HTTP_400_BAD_REQUEST)
+            elif "UNIQUE constraint failed: inventory_customuser.email" in str(e):
+                return Response({'error': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Log the full error for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Unhandled IntegrityError during registration: {e}")
+                return Response({'error': 'Registration failed due to a database error.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
