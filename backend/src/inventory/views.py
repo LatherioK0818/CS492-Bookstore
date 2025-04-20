@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from rest_framework.permissions import IsAuthenticated
-from .models import Book, Order, CustomUser
+from .models import Book, Order, CustomUser, Payment
 from .serializers import BookSerializer, OrderSerializer, RegistrationSerializer,  CustomUserSerializer
 from rest_framework.views import APIView
+from rest_framework import viewsets
+
 
 # ✅ Custom permission: only staff can write, everyone can read
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -66,24 +68,33 @@ class BookListCreateView(APIView):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['created_at', 'status']
     search_fields = ['status']
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Order.objects.all() if user.is_staff else Order.objects.filter(customer=user)
-
-        # Add optional status filtering
-        status_param = self.request.query_params.get('status')
-        if status_param:
-            queryset = queryset.filter(status=status_param)
-
-        return queryset
+        return Order.objects.all() if user.is_staff else Order.objects.filter(customer=user)
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+
+        payment_data = request.data.get("payment")
+        if payment_data:
+            Payment.objects.create(
+                order=order,
+                cardholder_name=payment_data.get("cardholder_name"),
+                masked_card=payment_data.get("masked_card", "**** **** **** 0000"),
+            )
+
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
