@@ -6,7 +6,7 @@ from django.db import IntegrityError
 from rest_framework.permissions import IsAuthenticated
 from .models import Book, Order, CustomUser
 from .serializers import BookSerializer, OrderSerializer, RegistrationSerializer,  CustomUserSerializer
-
+from rest_framework.views import APIView
 
 # ✅ Custom permission: only staff can write, everyone can read
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -21,6 +21,17 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsStaffOrReadOnly]
+
+    def create(self, request, *args, **kwargs):
+        is_many = isinstance(request.data, list)
+        serializer = self.get_serializer(data=request.data, many=is_many)
+
+        if not serializer.is_valid():
+            print(serializer.errors)  # Debugging purpose
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='restock')
     def restock(self, request, pk=None):
@@ -41,12 +52,15 @@ class BookViewSet(viewsets.ModelViewSet):
         book.save()
         return Response({'message': f"Restocked {quantity} units of '{book.title}'."})
 class BookListCreateView(APIView):
-    def post(self, request):
-        many = isinstance(request.data, list)
-        serializer = BookSerializer(data=request.data, many=many)
+     def post(self, request, *args, **kwargs):
+        # Check if data is a list (bulk insert)
+        is_many = isinstance(request.data, list)
+        serializer = BookSerializer(data=request.data, many=is_many)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # ✅ ViewSet for managing orders
 class OrderViewSet(viewsets.ModelViewSet):

@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from inventory import views as inventory_views
+from inventory.views import BookListCreateView
 from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
@@ -14,4 +15,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  
     path('api/me/', inventory_views.get_current_user, name='get_current_user'),
     path('api/token/verify/', jwt_views.TokenVerifyView.as_view(), name='token_verify'),
+    path('api/books/', BookListCreateView.as_view(), name='book-list-create'),
 ]

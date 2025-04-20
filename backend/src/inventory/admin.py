@@ -13,13 +13,13 @@ class BookAdmin(admin.ModelAdmin):
         return [] if request.user.is_superuser else ['isbn']
 
     def get_list_display(self, request):
-        return ['title', 'author', 'isbn', 'quantity', 'price'] if request.user.is_superuser else ['title', 'author', 'quantity', 'price']
+        return ['title', 'author', 'isbn', 'subject', 'quantity', 'price'] if request.user.is_superuser else ['title', 'author', 'subject', 'quantity', 'price']
 
     def get_search_fields(self, request):
-        return ['title', 'author', 'isbn'] if request.user.is_superuser else ['title', 'author']
+        return ['title', 'author', 'isbn', 'subject'] if request.user.is_superuser else ['title', 'author', 'subject']
 
     def get_list_filter(self, request):
-        return ['author'] if request.user.is_superuser else []
+        return ['author', 'subject'] if request.user.is_superuser else ['subject']
 
     def get_ordering(self, request):
         return ['title'] if request.user.is_superuser else ['-quantity']
@@ -30,7 +30,7 @@ class BookAdmin(admin.ModelAdmin):
     def get_fieldsets(self, request, obj=None):
         return (
             (None, {
-                'fields': ('title', 'author', 'isbn', 'quantity', 'price')
+                'fields': ('title', 'author', 'isbn', 'subject', 'quantity', 'price')
             }),
         )
 
