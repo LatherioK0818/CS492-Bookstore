@@ -6,7 +6,12 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
-
+      
+    def create(self, validated_data):
+        # Handle single or bulk create
+        if isinstance(validated_data, list):
+            return Book.objects.bulk_create([Book(**item) for item in validated_data])
+        return super().create(validated_data)
 
 # ✅ Order Status Log Serializer
 class OrderStatusLogSerializer(serializers.ModelSerializer):

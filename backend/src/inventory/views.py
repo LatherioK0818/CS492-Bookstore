@@ -40,8 +40,14 @@ class BookViewSet(viewsets.ModelViewSet):
         book.quantity += quantity
         book.save()
         return Response({'message': f"Restocked {quantity} units of '{book.title}'."})
-
-
+class BookListCreateView(APIView):
+    def post(self, request):
+        many = isinstance(request.data, list)
+        serializer = BookSerializer(data=request.data, many=many)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # ✅ ViewSet for managing orders
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
